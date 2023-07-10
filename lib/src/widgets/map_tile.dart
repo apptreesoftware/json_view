@@ -10,6 +10,7 @@ class MapTile extends StatefulWidget {
     super.key,
     required this.keyName,
     required this.items,
+    required this.path,
     this.expanded = false,
     required this.depth,
   });
@@ -17,6 +18,7 @@ class MapTile extends StatefulWidget {
   final List<MapEntry> items;
   final bool expanded;
   final int depth;
+  final String path;
 
   @override
   State<MapTile> createState() => _MapTileState();
@@ -66,6 +68,7 @@ class _MapTileState extends State<MapTile> {
           onTap: _changeState,
           expanded: _expanded,
           showLeading: widget.items.isNotEmpty,
+          path: widget.path,
         ),
         if (_expanded)
           Padding(
@@ -77,6 +80,7 @@ class _MapTileState extends State<MapTile> {
                   key: item.key,
                   value: item.value,
                   depth: widget.depth + 1,
+                  path: appendPath(widget.path, item.key),
                 );
               }).toList(),
             ),

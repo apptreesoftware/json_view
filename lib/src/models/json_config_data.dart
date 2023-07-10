@@ -15,6 +15,7 @@ class JsonConfigData {
     this.animationDuration,
     this.animationCurve,
     this.gap,
+    this.onKeyTapped,
   });
 
   JsonConfigData.fromJsonView(JsonView view)
@@ -24,6 +25,7 @@ class JsonConfigData {
         itemPadding = view.itemPadding,
         animationDuration = view.animationDuration,
         animationCurve = view.animationCurve,
+        onKeyTapped = view.onKeyTapped,
         gap = null;
 
   JsonConfigData.fromJsonViewBody(JsonViewBody body)
@@ -33,6 +35,7 @@ class JsonConfigData {
         itemPadding = body.itemPadding,
         animationDuration = body.animationDuration,
         animationCurve = body.animationCurve,
+        onKeyTapped = body.onKeyTapped,
         gap = body.gap;
 
   /// color scheme of json view
@@ -73,6 +76,8 @@ class JsonConfigData {
   /// json list gap, default is 100
   /// {@endtemplate}
   final int? gap;
+
+  final OnKeyTapped? onKeyTapped;
 
   /// default use animation
   static const kUseAnimation = true;
@@ -130,6 +135,7 @@ class JsonConfigData {
     Duration? animationDuration,
     Curve? animationCurve,
     int? gap,
+    OnKeyTapped? onKeyTapped,
   }) {
     final colorScheme = this.color == null ? color : this.color!.merge(color);
     final styleScheme = this.style == null ? style : this.style!.merge(style);
@@ -141,6 +147,7 @@ class JsonConfigData {
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,
       gap: gap ?? this.gap,
+      onKeyTapped: onKeyTapped ?? this.onKeyTapped,
     );
   }
 
@@ -155,6 +162,7 @@ class JsonConfigData {
       animationDuration: data.animationDuration,
       animationCurve: data.animationCurve,
       gap: data.gap,
+      onKeyTapped: data.onKeyTapped,
     );
   }
 
@@ -169,7 +177,8 @@ class JsonConfigData {
         other.animation == animation &&
         other.animationDuration == animationDuration &&
         other.animationCurve == animationCurve &&
-        other.gap == gap;
+        other.gap == gap &&
+        other.onKeyTapped == onKeyTapped;
   }
 
   @override
@@ -180,5 +189,6 @@ class JsonConfigData {
         animationDuration,
         animationCurve,
         gap,
+        onKeyTapped,
       );
 }

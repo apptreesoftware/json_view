@@ -1,10 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:json_view/json_view.dart';
 
-import '../models/json_color_scheme.dart';
-import '../models/json_style_scheme.dart';
 import '../painters/value_background_painter.dart';
 import 'arrow_widget.dart';
-import 'json_config.dart';
 
 typedef SpanBuilder = InlineSpan Function(BuildContext context, dynamic value);
 
@@ -19,7 +18,8 @@ class KeySpan extends TextSpan {
   const KeySpan({
     required this.keyValue,
     super.style,
-  }) : super(text: keyValue);
+    required GestureRecognizer? recognizer,
+  }) : super(text: keyValue, recognizer: recognizer);
 }
 
 class ValueSpan extends TextSpan {
@@ -36,10 +36,12 @@ class KeyValueTile extends StatelessWidget {
   final Widget? leading;
   final VoidCallback? onTap;
   final int? maxLines;
+  final String path;
   const KeyValueTile({
     super.key,
     required this.keyName,
     required this.value,
+    required this.path,
     this.leading,
     this.onTap,
     this.maxLines,
@@ -87,6 +89,13 @@ class KeyValueTile extends StatelessWidget {
       KeySpan(
         keyValue: parsedKeyName(context),
         style: keyStyle(context).copyWith(color: cs.normalColor ?? Colors.grey),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () {
+            var config = JsonConfig.of(context);
+            if (config.onKeyTapped != null) {
+              config.onKeyTapped!(keyName, path);
+            }
+          },
       ),
       ColonSpan(
         style:
@@ -120,6 +129,7 @@ class NullTile extends KeyValueTile {
   const NullTile({
     super.key,
     required super.keyName,
+    required super.path,
   }) : super(value: 'null');
 
   @override
@@ -158,6 +168,7 @@ class NumTile extends KeyValueTile {
   const NumTile({
     super.key,
     required super.keyName,
+    required super.path,
     required num value,
   }) : super(value: '$value');
 
@@ -170,6 +181,7 @@ class BoolTile extends KeyValueTile {
   const BoolTile({
     super.key,
     required super.keyName,
+    required super.path,
     required bool value,
   }) : super(value: '$value');
 
@@ -182,6 +194,7 @@ class MapListTile extends KeyValueTile {
   MapListTile({
     super.key,
     required super.keyName,
+    required super.path,
     required String value,
     required VoidCallback onTap,
     required bool showLeading,

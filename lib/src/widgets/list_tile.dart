@@ -24,12 +24,14 @@ class ListTile extends StatefulWidget {
     required this.range,
     this.expanded = false,
     required this.depth,
+    required this.path,
   });
   final String keyName;
   final List items;
   final IndexRange range;
   final bool expanded;
   final int depth;
+  final String path;
 
   @override
   State<ListTile> createState() => _ListTileState();
@@ -66,6 +68,7 @@ class _ListTileState extends State<ListTile> {
           index: i,
           value: widget.items[i + widget.range.start],
           depth: widget.depth + 1,
+          path: appendPath(widget.path, '[$i]'),
         ));
       }
       return result;
@@ -99,17 +102,18 @@ class _ListTileState extends State<ListTile> {
                 IndexRange(start: startIndex, end: startIndex + currentGap - 1),
             expanded: widget.expanded,
             depth: widget.depth + 1,
+            path: appendPath(widget.path, '${widget.keyName}[$i]'),
           ),
         );
       } else {
         result.add(
           ListTile(
-            keyName: '[$i]',
-            items: widget.items,
-            range: IndexRange(start: startIndex, end: endIndex),
-            expanded: widget.expanded,
-            depth: widget.depth + 1,
-          ),
+              keyName: '[$i]',
+              items: widget.items,
+              range: IndexRange(start: startIndex, end: endIndex),
+              expanded: widget.expanded,
+              depth: widget.depth + 1,
+              path: appendPath(widget.path, '${widget.keyName}[$i]')),
         );
       }
     }
@@ -142,6 +146,7 @@ class _ListTileState extends State<ListTile> {
           onTap: _changeState,
           expanded: _expanded,
           showLeading: widget.items.isNotEmpty,
+          path: appendPath(widget.path, widget.keyName),
           // arrow: widget.arrow,
         ),
         if (_expanded)

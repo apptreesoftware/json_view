@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart' hide ListTile;
 import 'package:json_view/src/widgets/json_config.dart';
 import 'package:json_view/src/widgets/string_tile.dart';
 
@@ -7,6 +7,8 @@ import '../models/json_style_scheme.dart';
 import 'list_tile.dart';
 import 'map_tile.dart';
 import 'simple_tiles.dart';
+
+typedef OnKeyTapped = void Function(String key, String path);
 
 class JsonView extends StatelessWidget {
   /// provider a json view, build with listview
@@ -27,6 +29,7 @@ class JsonView extends StatelessWidget {
     this.animationDuration,
     this.animationCurve,
     this.gap,
+    this.onKeyTapped,
   });
 
   /// {@template json_view.json_view.json}
@@ -73,6 +76,8 @@ class JsonView extends StatelessWidget {
   /// {@macro json_view.json_config_data.JsonConfigData.gap}
   final int? gap;
 
+  final OnKeyTapped? onKeyTapped;
+
   @override
   Widget build(BuildContext context) {
     if (json is! Map && json is! List) {
@@ -85,14 +90,14 @@ class JsonView extends StatelessWidget {
       builder = (context, index) {
         final item = items[index];
         final key = item.key;
-        return getParsedItem(key: key, value: item.value, depth: 0);
+        return getParsedItem(key: key, value: item.value, depth: 0, path: key);
       };
       count = items.length;
     } else if (json is List) {
       final items = json as List;
       builder = (context, index) {
         final item = items[index];
-        return getIndexedItem(index: index, value: item, depth: 0);
+        return getIndexedItem(index: index, value: item, depth: 0, path: '');
       };
       count = items.length;
     }
@@ -120,6 +125,7 @@ class JsonViewBody extends StatelessWidget {
     this.animationCurve,
     this.gap,
     this.crossAxisAlignment = CrossAxisAlignment.start,
+    this.onKeyTapped,
   });
 
   /// {@macro json_view.json_view.json}
@@ -146,6 +152,8 @@ class JsonViewBody extends StatelessWidget {
   /// {@macro json_view.json_config_data.JsonConfigData.gap}
   final int? gap;
 
+  final OnKeyTapped? onKeyTapped;
+
   /// crossAxisAlignment
   final CrossAxisAlignment crossAxisAlignment;
 
@@ -158,11 +166,11 @@ class JsonViewBody extends StatelessWidget {
     if (json is Map) {
       items = (json as Map).entries.map((entry) {
         final key = entry.key;
-        return getParsedItem(key: key, value: entry.value);
+        return getParsedItem(key: key, value: entry.value, path: '');
       }).toList();
     } else if (json is List) {
       items = (json as List).map((item) {
-        return getIndexedItem(index: 0, value: item);
+        return getIndexedItem(index: 0, value: item, path: '');
       }).toList();
     }
     return Column(
@@ -177,15 +185,17 @@ Widget getParsedItem({
   required String key,
   required dynamic value,
   int depth = 0,
+  required String path,
 }) {
-  if (value == null) return NullTile(keyName: key);
-  if (value is num) return NumTile(keyName: key, value: value);
-  if (value is bool) return BoolTile(keyName: key, value: value);
+  if (value == null) return NullTile(keyName: key, path: path);
+  if (value is num) return NumTile(keyName: key, value: value, path: path);
+  if (value is bool) return BoolTile(keyName: key, value: value, path: path);
   if (value is String) {
-    return StringTile(keyName: key, value: value);
+    return StringTile(keyName: key, value: value, path: path);
   }
   if (value is List) {
     return ListTile(
+      path: path,
       keyName: key,
       items: value,
       range: IndexRange(start: 0, end: value.length - 1),
@@ -194,6 +204,7 @@ Widget getParsedItem({
   }
   if (value is Map) {
     return MapTile(
+      path: path,
       keyName: key,
       items: value.entries.toList(),
       depth: depth,
@@ -204,6 +215,14 @@ Widget getParsedItem({
 
 /// get a tile Widget from value & index
 Widget getIndexedItem(
-    {required int index, required dynamic value, int depth = 0}) {
-  return getParsedItem(key: '[$index]', value: value, depth: depth);
+    {required int index,
+    required dynamic value,
+    int depth = 0,
+    required String path}) {
+  return getParsedItem(key: '[$index]', value: value, depth: depth, path: path);
+}
+
+String appendPath(String path, String key) {
+  if (path.isEmpty) return key;
+  return '$path.$key';
 }

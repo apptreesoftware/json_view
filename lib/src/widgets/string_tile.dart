@@ -1,13 +1,20 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:json_view/src/widgets/simple_tiles.dart';
 
 import '../../json_view.dart';
 
 class StringTile extends StatefulWidget {
-  const StringTile({super.key, required this.keyName, required this.value});
+  const StringTile({
+    super.key,
+    required this.keyName,
+    required this.value,
+    required this.path,
+  });
 
   final String keyName;
   final String value;
+  final String path;
   @override
   State<StringTile> createState() => _StringTileState();
 }
@@ -29,7 +36,7 @@ class _StringTileState extends State<StringTile> {
       builder: (context, box) {
         /**
          *  [KEY_PREFIX]  [COLON]     [VALUE]
-         *  [computed]    [computed]  [computed] 
+         *  [computed]    [computed]  [computed]
          */
         double boxWidth = box.maxWidth;
 
@@ -38,6 +45,12 @@ class _StringTileState extends State<StringTile> {
             KeySpan(
               keyValue: getParsedKeyName(context),
               style: config.style?.keysStyle,
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  if (config.onKeyTapped != null) {
+                    config.onKeyTapped!(widget.keyName, widget.path);
+                  }
+                },
             ),
             const ColonSpan(),
             ValueSpan(
@@ -56,6 +69,7 @@ class _StringTileState extends State<StringTile> {
         Widget selectedResult = _StringInnterTile(
           keyName: widget.keyName,
           value: widget.value,
+          path: widget.path,
           onTap: () {
             setState(() {
               expanded = !expanded;
@@ -67,6 +81,7 @@ class _StringTileState extends State<StringTile> {
           Widget result = _StringOnlyDisplayTile(
             keyName: widget.keyName,
             value: widget.value,
+            path: widget.path,
             onTap: () {
               setState(() {
                 expanded = !expanded;
@@ -99,6 +114,7 @@ class _StringInnterTile extends KeyValueTile {
   const _StringInnterTile({
     required super.keyName,
     required String value,
+    required super.path,
     super.maxLines,
     VoidCallback? onTap,
   }) : super(value: '"$value"', onTap: onTap);
@@ -110,15 +126,26 @@ class _StringInnterTile extends KeyValueTile {
 
 class _StringOnlyDisplayTile extends _StringInnterTile {
   const _StringOnlyDisplayTile(
-      {required String keyName, required String value, super.onTap})
+      {required String keyName,
+      required String value,
+      super.onTap,
+      required super.path})
       : super(keyName: keyName, value: value, maxLines: 1);
   @override
   Widget build(BuildContext context) {
     final cs = colorScheme(context);
+
     final spans = <InlineSpan>[
       KeySpan(
         keyValue: parsedKeyName(context),
         style: keyStyle(context).copyWith(color: cs.normalColor ?? Colors.grey),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () {
+            var config = JsonConfig.of(context);
+            if (config.onKeyTapped != null) {
+              config.onKeyTapped!(keyName, path);
+            }
+          },
       ),
       ColonSpan(
         style:
